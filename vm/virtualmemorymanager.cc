@@ -71,20 +71,20 @@ void VirtualMemoryManager::swapPageIn(int virtAddr)
             cont = false;
         }
         else{
-            TranslationEntry* victimPage = getPageTableEntry(physicalMemoryInfo + nextVictim);
-            if(victimPage->use == TRUE)
+            currPageEntry = getPageTableEntry(physicalMemoryInfo + nextVictim);
+            if(currPageEntry->use == TRUE)
             {
-                victimPage->use = FALSE;
+                currPageEntry->use = FALSE;
                 nextVictim = (nextVictim+1) % NumPhysPages;
             }
             else{
                 cont = false;
-                if(victimPage->dirty == TRUE)
+                if(currPageEntry->dirty == TRUE)
                 {
-                    int sect = victimPage->locationOnDisk;
-                    char* memAdd = machine->mainMemory + victimPage->physicalPage * PageSize;
+                    int sect = currPageEntry->locationOnDisk;
+                    char* memAdd = machine->mainMemory + currPageEntry->physicalPage * PageSize;
                     writeToSwap(memAdd, PageSize, sect);
-                    victimPage->valid = FALSE;
+                    currPageEntry->valid = FALSE;
                 }
                 physPageInfo->space = currentThread->space;
                 physPageInfo->pageTableIndex = virtAddr / PageSize;
@@ -92,8 +92,8 @@ void VirtualMemoryManager::swapPageIn(int virtAddr)
                 TranslationEntry *temp = getPageTableEntry(physPageInfo);
                 temp->physicalPage = currPageEntry->physicalPage;
                 // currPageEntry->physicalPage = memoryManager->getPage();
-                victimPage->valid = FALSE;
-                victimPage->use = FALSE;
+                currPageEntry->valid = FALSE;
+                currPageEntry->use = FALSE;
             }
         }
     }
